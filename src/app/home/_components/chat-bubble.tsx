@@ -15,7 +15,7 @@ const ChatBubble = ({ conversation, isLoading }: ChatBubbleProps) => {
 
   return (
     <ScrollArea className="h-80">
-      <div className="border-border bg-card/50 flex max-h-80 w-full max-w-xl flex-col gap-4 overflow-y-auto rounded-xl border p-4 shadow-sm backdrop-blur-sm">
+      <div className="border-border bg-card/50 flex w-full max-w-xl flex-col gap-4 overflow-y-auto rounded-xl border p-4 shadow-sm backdrop-blur-sm h-80">
         {conversation.length === 0 && !isLoading ? (
           <div className="text-muted-foreground flex h-80 flex-col items-center justify-center py-8 text-sm">
             <p className="text-center">No conversation yet — start chatting!</p>
@@ -23,7 +23,7 @@ const ChatBubble = ({ conversation, isLoading }: ChatBubbleProps) => {
         ) : (
           <>
             {conversation.map((item, index) => (
-              <div key={index} className="flex h-96 flex-col gap-3">
+              <div key={index} className="flex flex-col gap-3">
                 <div className="flex items-start gap-3">
                   <div className="bg-primary text-primary-foreground flex size-8 shrink-0 items-center justify-center rounded-full font-bold">
                     U
@@ -43,7 +43,7 @@ const ChatBubble = ({ conversation, isLoading }: ChatBubbleProps) => {
                 </div>
 
                 <div className="flex items-start justify-end gap-3">
-                  <div className="bg-primary/10 text-foreground max-w-[80%] rounded-2xl px-3 py-2 text-sm shadow-inner">
+                  <div className="bg-primary/10 text-foreground max-w-[80%] rounded-2xl px-3 py-2 text-sm shadow-inner h-auto">
                     <pre className="font-sans whitespace-pre-wrap">{item.response}</pre>
                   </div>
                   <div className="bg-primary text-primary-foreground flex size-8 shrink-0 items-center justify-center rounded-full font-bold">

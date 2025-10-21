@@ -50,16 +50,23 @@ const Chat = ({ message, setMessage, addToConversation, setIsLoading }: ChatProp
       setIsLoading(false);
     }
   };
-
   const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file?.type === "application/pdf") {
-      setSelectedFile(file);
-    } else if (file) {
-      toast.error("Please select a PDF file");
-    }
-  };
+    if (!file) return;
 
+    if (file.type !== "application/pdf") {
+      toast.error("Please select a PDF file");
+      return;
+    }
+
+    const MAX_FILE_SIZE = 1024 * 1024; // 1 MB
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error("File is too large. Maximum allowed size is 1 MB.");
+      return;
+    }
+
+    setSelectedFile(file);
+  };
   const handleKeyDown = async (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -70,7 +77,7 @@ const Chat = ({ message, setMessage, addToConversation, setIsLoading }: ChatProp
   return (
     <InputGroup>
       <InputGroupTextarea
-        placeholder="Ask, Search or Chat..."
+        placeholder="Ask questions to start a conversation"
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         onKeyDown={handleKeyDown}
@@ -101,7 +108,7 @@ const Chat = ({ message, setMessage, addToConversation, setIsLoading }: ChatProp
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
-        <InputGroupText className="ml-auto">52% used</InputGroupText>
+        <InputGroupText className="ml-auto">kaizodevx</InputGroupText>
         <Separator orientation="vertical" className="bg-foreground h-4" />
         <InputGroupButton variant="default" className="rounded-full" size="icon-xs" onClick={handleSendMessage}>
           <ArrowUpIcon />
