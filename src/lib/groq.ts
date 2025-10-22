@@ -4,13 +4,11 @@ import { createAgent, dynamicSystemPromptMiddleware } from "langchain";
 import { ChatGroq } from "@langchain/groq";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
-import { MessageProps } from "@/app/interface/chat";
+import { MessageProps } from "@/interfaces/chat";
 import { contextSchema, ContextSchema } from "./schema";
 import { personaPrompts } from "./utils";
-import { PERSONA } from "@/constant/persona";
+import { PERSONA } from "@/constants/persona";
 import { MemorySaver } from "@langchain/langgraph";
-
-const checkpointer = new MemorySaver();
 
 const model = new ChatGroq({
   apiKey: process.env.GROQ_API_KEY,
@@ -24,14 +22,13 @@ const agent = createAgent({
   model,
   tools: [], //Add tools based on the user's needs
   contextSchema,
+  checkpointer: new MemorySaver(),
   middleware: [
     dynamicSystemPromptMiddleware<ContextSchema>((_, runtime) => {
       const persona = runtime.context.persona || PERSONA.AUTO;
-
       return personaPrompts[persona];
     }),
   ],
-  checkpointer,
 });
 
 const splitter = new RecursiveCharacterTextSplitter({ chunkSize: 1000, chunkOverlap: 200 });
@@ -51,6 +48,7 @@ export const sendMessage = async ({ message, file, persona }: MessageProps): Pro
     { messages: [{ role: "user", content: userMessage }] },
     { context: { persona }, configurable: { thread_id: "1" } }, //Fix Thread ID
   );
+
   const assistantReply = String(response.messages.at(-1)?.content ?? "");
 
   return assistantReply;

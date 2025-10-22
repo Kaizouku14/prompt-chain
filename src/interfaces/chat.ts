@@ -1,4 +1,4 @@
-import { personaType } from "@/constant/persona";
+import { personaType } from "@/constants/persona";
 
 export interface MessageProps {
   message: string;

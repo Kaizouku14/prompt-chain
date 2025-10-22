@@ -1,6 +1,6 @@
 "use client";
 
-import { ChatProps } from "@/app/interface/chat";
+import { ChatProps } from "@/interfaces/chat";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,7 +15,7 @@ import {
   InputGroupTextarea,
 } from "@/components/ui/input-group";
 import { Separator } from "@/components/ui/separator";
-import { Persona, personaType } from "@/constant/persona";
+import { Persona, personaType } from "@/constants/persona";
 import { sendMessage } from "@/lib/groq";
 import { ArrowUpIcon, PlusIcon } from "lucide-react";
 import { useRef, useState, type ChangeEvent, type KeyboardEvent } from "react";

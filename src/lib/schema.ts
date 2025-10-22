@@ -1,4 +1,4 @@
-import { Persona } from "@/constant/persona";
+import { Persona } from "@/constants/persona";
 import { z } from "zod";
 
 export const contextSchema = z.object({
