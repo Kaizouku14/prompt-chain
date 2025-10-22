@@ -15,8 +15,8 @@ import {
   InputGroupTextarea,
 } from "@/components/ui/input-group";
 import { Separator } from "@/components/ui/separator";
-import { chatMessage } from "@/lib/groq";
-import { Persona, personaPrompts } from "@/lib/utils";
+import { Persona, personaType } from "@/constant/persona";
+import { sendMessage } from "@/lib/groq";
 import { ArrowUpIcon, PlusIcon } from "lucide-react";
 import { useRef, useState, type ChangeEvent, type KeyboardEvent } from "react";
 import { toast } from "sonner";
@@ -24,24 +24,19 @@ import { toast } from "sonner";
 const Chat = ({ message, setMessage, addToConversation, setIsLoading }: ChatProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [persona, setPersona] = useState<string>("Auto");
+  const [persona, setPersona] = useState<personaType>("Auto");
 
   const handleSendMessage = async () => {
     setIsLoading(true);
     try {
       if (message.trim() !== "" || selectedFile) {
-        let fileContent = "";
-
-        if (selectedFile) {
-          fileContent = await selectedFile.text();
-        }
-
-        const response = await chatMessage({
-          input: message,
-          file: fileContent,
-          persona: personaPrompts[persona]!,
+        const response = await sendMessage({
+          message,
+          file: selectedFile,
+          persona,
         });
-        addToConversation(message, response, selectedFile ?? undefined);
+
+        addToConversation(message, response, selectedFile);
         setMessage("");
         setSelectedFile(null);
       }
@@ -50,6 +45,7 @@ const Chat = ({ message, setMessage, addToConversation, setIsLoading }: ChatProp
       setIsLoading(false);
     }
   };
+
   const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -67,6 +63,7 @@ const Chat = ({ message, setMessage, addToConversation, setIsLoading }: ChatProp
 
     setSelectedFile(file);
   };
+
   const handleKeyDown = async (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();

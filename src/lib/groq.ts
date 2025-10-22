@@ -1,10 +1,18 @@
 "use server";
 
+import { createAgent, dynamicSystemPromptMiddleware } from "langchain";
 import { ChatGroq } from "@langchain/groq";
-import { ChatPromptTemplate } from "@langchain/core/prompts";
-import { StringOutputParser } from "@langchain/core/output_parsers";
+import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
+import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
+import { MessageProps } from "@/app/interface/chat";
+import { contextSchema, ContextSchema } from "./schema";
+import { personaPrompts } from "./utils";
+import { PERSONA } from "@/constant/persona";
+import { MemorySaver } from "@langchain/langgraph";
 
-const llm = new ChatGroq({
+const checkpointer = new MemorySaver();
+
+const model = new ChatGroq({
   apiKey: process.env.GROQ_API_KEY,
   model: "llama-3.3-70b-versatile",
   temperature: 0.65,
@@ -12,22 +20,36 @@ const llm = new ChatGroq({
   maxRetries: 3,
 });
 
-export const chatMessage = async ({ input, file, persona }: { input: string; file?: string; persona: string }) => {
+const agent = createAgent({
+  model,
+  tools: [], //Add tools based on the user's needs
+  contextSchema,
+  middleware: [
+    dynamicSystemPromptMiddleware<ContextSchema>((_, runtime) => {
+      const persona = runtime.context.persona || PERSONA.AUTO;
+
+      return personaPrompts[persona];
+    }),
+  ],
+  checkpointer,
+});
+
+const splitter = new RecursiveCharacterTextSplitter({ chunkSize: 1000, chunkOverlap: 200 });
+
+export const sendMessage = async ({ message, file, persona }: MessageProps): Promise<string> => {
+  const loader = file && new PDFLoader(file);
+  const docs = await loader?.load();
+  const chunks = await splitter.splitDocuments(docs || []);
+
   const userMessage = file
-    ? `User said: ${input}\n\nHere is the content of the uploaded file:\n${file}`
-    : `User said: ${input}`;
+    ? `User said: ${message}\n\nHere is the content of the uploaded file:\n${chunks}`
+    : `User said: ${message}`;
 
-  const chatPrompt = ChatPromptTemplate.fromMessages([
-    [
-      "system",
-      `${persona} You are a helpful assistant who explains information in a clear, structured way.
-       If a file is provided, review and summarize its key insights accurately.
-       If no file is provided, simply respond to the user's question naturally.`,
-    ],
-    ["user", userMessage],
-  ]);
+  const response = await agent.invoke(
+    { messages: [{ role: "user", content: userMessage }] },
+    { context: { persona }, configurable: { thread_id: "1" } }, //Fix Thread ID
+  );
+  const assistantReply = String(response.messages.at(-1)?.content ?? "");
 
-  const chain = chatPrompt.pipe(llm).pipe(new StringOutputParser());
-  const response = await chain.invoke({ input, file, persona });
-  return response;
+  return assistantReply;
 };

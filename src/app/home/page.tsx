@@ -11,7 +11,7 @@ const Home = () => {
   const [message, setMessage] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const addToConversation = (newMessage: string, newResponse: string, file?: File) => {
+  const addToConversation = (newMessage: string, newResponse: string, file?: File | null) => {
     setConversation((prev) => [...prev, { message: newMessage, response: newResponse, file }]);
     setIsLoading(false);
   };

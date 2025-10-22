@@ -11,5 +11,3 @@ export const personaPrompts: Record<string, string> = {
   Expert: `You are a professional AI expert. Your tone is confident, precise, and informative. You explain complex topics simply and thoroughly.`,
   Minimalist: `You are a minimalist AI assistant. You reply briefly and directly — no fluff, no unnecessary words.`,
 };
-
-export const Persona = ["Auto", "Playful", "Expert", "Minimalist"] as const;
