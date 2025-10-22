@@ -50,6 +50,5 @@ export const sendMessage = async ({ message, file, persona }: MessageProps): Pro
   );
 
   const assistantReply = String(response.messages.at(-1)?.content ?? "");
-
   return assistantReply;
 };

@@ -4,7 +4,7 @@ import { useState } from "react";
 import Chat from "./_components/chat";
 import ChatBubble from "./_components/chat-bubble";
 import { Button } from "@/components/ui/button";
-import { ConversationMessage } from "../interface/chat";
+import { ConversationMessage } from "@/interfaces/chat";
 
 const Home = () => {
   const [conversation, setConversation] = useState<ConversationMessage[]>([]);

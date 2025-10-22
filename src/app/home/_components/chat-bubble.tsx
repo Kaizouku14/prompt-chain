@@ -4,7 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { FileIcon } from "lucide-react";
 import LoadingBubble from "./loading-bubble";
 import { useRef, useEffect } from "react";
-import { ChatBubbleProps } from "@/app/interface/chat";
+import { ChatBubbleProps } from "@/interfaces/chat";
 
 const ChatBubble = ({ conversation, isLoading }: ChatBubbleProps) => {
   const bottomRef = useRef<HTMLDivElement | null>(null);
