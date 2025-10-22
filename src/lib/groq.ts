@@ -42,7 +42,9 @@ export const sendMessage = async ({ message, file, persona }: MessageProps): Pro
   const chunks = await splitter.splitDocuments(docs || []);
 
   const userMessage = file
-    ? `User said: ${message}\n\nHere is the content of the uploaded file:\n${chunks}`
+    ? `User said: ${message}\n\nHere is the content of the uploaded file:\n${chunks
+        .map((chunk) => chunk.pageContent)
+        .join("\n\n")}`
     : `User said: ${message}`;
 
   const response = await agent.invoke(
