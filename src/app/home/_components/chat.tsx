@@ -21,16 +21,18 @@ import { ArrowUpIcon, PlusIcon } from "lucide-react";
 import { useRef, useState, type ChangeEvent, type KeyboardEvent } from "react";
 import { toast } from "sonner";
 
-const Chat = ({ message, setMessage, addToConversation, setIsLoading }: ChatProps) => {
+const Chat = ({ threadId, message, setMessage, addToConversation, setIsLoading }: ChatProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [persona, setPersona] = useState<personaType>("Auto");
 
   const handleSendMessage = async () => {
-    setIsLoading(true);
     try {
       if (message.trim() !== "" || selectedFile) {
+        setIsLoading(true);
+
         const response = await sendMessage({
+          threadId,
           message,
           file: selectedFile,
           persona,

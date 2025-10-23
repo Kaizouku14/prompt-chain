@@ -3,7 +3,7 @@ export type personaType = (typeof Persona)[number];
 
 export enum PERSONA {
   AUTO = "Auto",
-  PLAYFUL = "Playful",
+  PLAYFUL = "playful",
   EXPERT = "Expert",
   MINIMALIST = "Minimalist",
 }

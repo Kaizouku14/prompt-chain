@@ -2,13 +2,13 @@
 
 import { createAgent, dynamicSystemPromptMiddleware } from "langchain";
 import { ChatGroq } from "@langchain/groq";
-import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
-import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { MessageProps } from "@/interfaces/chat";
 import { contextSchema, ContextSchema } from "./schema";
-import { personaPrompts } from "./utils";
 import { PERSONA } from "@/constants/persona";
 import { MemorySaver } from "@langchain/langgraph";
+import { buildPrompt } from "./prompt";
+import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
+import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 
 const model = new ChatGroq({
   apiKey: process.env.GROQ_API_KEY,
@@ -20,35 +20,44 @@ const model = new ChatGroq({
 
 const agent = createAgent({
   model,
-  tools: [], //Add tools based on the user's needs
+  tools: [], //Add tools based on the users needs
   contextSchema,
   checkpointer: new MemorySaver(),
   middleware: [
     dynamicSystemPromptMiddleware<ContextSchema>((_, runtime) => {
       const persona = runtime.context.persona || PERSONA.AUTO;
-      return personaPrompts[persona];
+      return buildPrompt(persona);
     }),
   ],
 });
 
 const splitter = new RecursiveCharacterTextSplitter({ chunkSize: 1000, chunkOverlap: 200 });
 
-export const sendMessage = async ({ message, file, persona }: MessageProps): Promise<string> => {
-  const loader = file && new PDFLoader(file);
-  const docs = await loader?.load();
-  const chunks = await splitter.splitDocuments(docs || []);
-
-  const userMessage = file
-    ? `User said: ${message}\n\nHere is the content of the uploaded file:\n${chunks
-        .map((chunk) => chunk.pageContent)
-        .join("\n\n")}`
-    : `User said: ${message}`;
+export const sendMessage = async ({ threadId, message, file, persona }: MessageProps): Promise<string> => {
+  const chunks = file ? await loadFileChunks(file) : [];
+  const userMessage = buildUserMessage(message, chunks);
 
   const response = await agent.invoke(
     { messages: [{ role: "user", content: userMessage }] },
-    { context: { persona }, configurable: { thread_id: "1" } }, //Fix Thread ID
+    { context: { persona }, configurable: { thread_id: threadId } },
   );
 
-  const assistantReply = String(response.messages.at(-1)?.content ?? "");
-  return assistantReply;
+  return String(response.messages.at(-1)?.content ?? "");
+};
+
+export const loadFileChunks = async (file: File): Promise<string[]> => {
+  try {
+    const loader = new PDFLoader(file);
+    const docs = await loader.load();
+    const chunks = await splitter.splitDocuments(docs);
+    return chunks.map((chunk) => chunk.pageContent);
+  } catch (err) {
+    console.error("Error loading file:", err);
+    return [];
+  }
+};
+
+const buildUserMessage = (message: string, chunks: string[]): string => {
+  if (!chunks.length) return `User said: ${message}`;
+  return [`User said: ${message}`, `\n\nHere is the content of the uploaded file:`, chunks.join("\n\n")].join("\n");
 };

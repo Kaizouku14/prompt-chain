@@ -5,8 +5,10 @@ import Chat from "./_components/chat";
 import ChatBubble from "./_components/chat-bubble";
 import { Button } from "@/components/ui/button";
 import { ConversationMessage } from "@/interfaces/chat";
+import { generateId } from "@/lib/utils";
 
 const Home = () => {
+  const [threadId, setThreadId] = useState<string>(generateId());
   const [conversation, setConversation] = useState<ConversationMessage[]>([]);
   const [message, setMessage] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -17,6 +19,8 @@ const Home = () => {
   };
 
   const clearConversation = () => {
+    const newThreadId = generateId();
+    setThreadId(newThreadId);
     setConversation([]);
     setMessage("");
     setIsLoading(false);
@@ -34,8 +38,9 @@ const Home = () => {
       </div>
       <ChatBubble conversation={conversation} isLoading={isLoading} />
       <Chat
-        addToConversation={addToConversation}
+        threadId={threadId}
         message={message}
+        addToConversation={addToConversation}
         setMessage={setMessage}
         setIsLoading={setIsLoading}
       />
