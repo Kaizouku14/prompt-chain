@@ -29,6 +29,7 @@ const Chat = ({ threadId, message, setMessage, addToConversation, setIsLoading }
   const handleSendMessage = async () => {
     try {
       if (message.trim() !== "" || selectedFile) {
+        addToConversation(message, undefined, selectedFile);
         setIsLoading(true);
 
         const response = await sendMessage({
@@ -38,7 +39,7 @@ const Chat = ({ threadId, message, setMessage, addToConversation, setIsLoading }
           persona,
         });
 
-        addToConversation(message, response, selectedFile);
+        addToConversation(undefined, response, undefined);
         setMessage("");
         setSelectedFile(null);
       }

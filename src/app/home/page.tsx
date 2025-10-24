@@ -13,7 +13,7 @@ const Home = () => {
   const [message, setMessage] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const addToConversation = (newMessage: string, newResponse: string, file?: File | null) => {
+  const addToConversation = (newMessage?: string, newResponse?: string, file?: File | null) => {
     setConversation((prev) => [...prev, { message: newMessage, response: newResponse, file }]);
     setIsLoading(false);
   };
@@ -29,7 +29,7 @@ const Home = () => {
   return (
     <div className="border-border flex h-auto w-full max-w-xl flex-col gap-2 rounded-xl border p-4 shadow">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-medium">Prompt or Upload PDF</h1>
+        <h1 className="text-xl md:text-2xl font-medium">Prompt or Upload PDF</h1>
         {conversation.length > 0 && (
           <Button onClick={clearConversation} className="text-sm">
             New Chat

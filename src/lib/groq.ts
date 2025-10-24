@@ -9,6 +9,7 @@ import { MemorySaver } from "@langchain/langgraph";
 import { buildPrompt } from "./prompt";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
+import { buildUserMessage } from "./utils";
 
 const model = new ChatGroq({
   apiKey: process.env.GROQ_API_KEY,
@@ -20,7 +21,7 @@ const model = new ChatGroq({
 
 const agent = createAgent({
   model,
-  tools: [], //Add tools based on the users needs
+  tools: [],
   contextSchema,
   checkpointer: new MemorySaver(),
   middleware: [
@@ -36,7 +37,6 @@ const splitter = new RecursiveCharacterTextSplitter({ chunkSize: 1000, chunkOver
 export const sendMessage = async ({ threadId, message, file, persona }: MessageProps): Promise<string> => {
   const chunks = file ? await loadFileChunks(file) : [];
   const userMessage = buildUserMessage(message, chunks);
-
   const response = await agent.invoke(
     { messages: [{ role: "user", content: userMessage }] },
     { context: { persona }, configurable: { thread_id: threadId } },
@@ -55,9 +55,4 @@ export const loadFileChunks = async (file: File): Promise<string[]> => {
     console.error("Error loading file:", err);
     return [];
   }
-};
-
-const buildUserMessage = (message: string, chunks: string[]): string => {
-  if (!chunks.length) return `User said: ${message}`;
-  return [`User said: ${message}`, `\n\nHere is the content of the uploaded file:`, chunks.join("\n\n")].join("\n");
 };
